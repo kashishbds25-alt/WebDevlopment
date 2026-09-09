@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atlas Finder — Find any country on Earth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #0F2438;
+    --ink-2: #16324A;
+    --parchment: #F3ECDC;
+    --parchment-2: #E8DFC8;
+    --gold: #C9A227;
+    --brick: #A6503A;
+    --line: rgba(243,236,220,0.16);
+    --text-dark: #1B2530;
+    --shadow: 0 18px 40px rgba(6,14,24,0.35);
+    --radius-lg: 22px;
+    --radius-sm: 8px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #163751 0%, transparent 60%),
+      radial-gradient(1000px 500px at 110% 10%, #0c1e30 0%, transparent 55%),
+      var(--ink);
+    color:var(--parchment);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    position:relative;
+  }
+
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background-image:
+      repeating-linear-gradient(0deg, transparent 0 78px, var(--line) 78px 79px),
+      repeating-linear-gradient(90deg, transparent 0 78px, var(--line) 78px 79px);
+    opacity:0.5;
+    z-index:0;
+  }
+
+  .wrap{position:relative; z-index:1; max-width:980px; margin:0 auto; padding:0 24px 90px;}
+  :focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
+
+  header{display:flex; align-items:center; gap:14px; padding:34px 0 10px;}
+  .mark{width:34px;height:34px;flex:none;}
+  .wordmark{font-family:'Fraunces', serif; font-size:1.35rem; letter-spacing:0.01em;}
+  .wordmark em{font-style:italic; color:var(--gold); font-weight:500;}
+
+  .hero{padding:64px 0 30px; text-align:center;}
+  .hero h1{
+    font-family:'Fraunces', serif; font-weight:500;
+    font-size:clamp(2.2rem, 5vw, 3.4rem); line-height:1.08;
+    margin:0 0 14px; max-width:14ch; margin-inline:auto;
+  }
+  .hero p{color:#c9c1ab; font-size:1.05rem; max-width:44ch; margin:0 auto 34px; line-height:1.55;}
+
+  .search-shell{position:relative; max-width:560px; margin:0 auto;}
+  .search-box{
+    display:flex; align-items:center; gap:12px;
+    background:var(--parchment); border-radius:100px;
+    padding:8px 8px 8px 22px; box-shadow:var(--shadow);
+    border:1px solid rgba(0,0,0,0.06);
+  }
+  .search-box svg{flex:none; opacity:0.55;}
+  .search-box input{
+    flex:1; border:none; background:none; outline:none;
+    font-family:'Inter', sans-serif; font-size:1.02rem;
+    color:var(--text-dark); padding:10px 0;
+  }
+  .search-box input::placeholder{color:#8a8370;}
+  .search-box button{
+    border:none; background:var(--ink); color:var(--parchment);
+    font-family:'Inter', sans-serif; font-weight:600; font-size:0.92rem;
+    padding:12px 22px; border-radius:100px; cursor:pointer;
+    transition:background 0.15s ease;
+  }
+  .search-box button:hover{background:var(--brick);}
+
+  .suggestions{
+    position:absolute; top:calc(100% + 8px); left:0; right:0;
+    background:var(--parchment); border-radius:16px; box-shadow:var(--shadow);
+    overflow:hidden; z-index:5; max-height:300px; overflow-y:auto; display:none;
+  }
+  .suggestions.open{display:block;}
+  .suggestions button{
+    display:flex; align-items:center; gap:10px; width:100%;
+    padding:11px 20px; background:none; border:none; text-align:left;
+    font-family:'Inter', sans-serif; font-size:0.95rem; color:var(--text-dark); cursor:pointer;
+  }
+  .suggestions button:hover, .suggestions button.active{background:var(--parchment-2);}
+  .suggestions .flagchar{font-size:1.15rem; line-height:1;}
+
+  .regions{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:30px;}
+  .regions button{
+    font-family:'Inter', sans-serif; font-size:0.86rem; color:#d8d1bd;
+    background:transparent; border:1px solid rgba(243,236,220,0.28);
+    padding:8px 16px; border-radius:100px; cursor:pointer; transition:all 0.15s ease;
+  }
+  .regions button:hover, .regions button.active{
+    border-color:var(--gold); color:var(--gold); background:rgba(201,162,39,0.08);
+  }
+
+  .state-msg{text-align:center; padding:40px 20px; color:#a99f88; font-size:0.95rem; display:none;}
+  .state-msg.show{display:block;}
+  .state-msg .big{
+    font-family:'Fraunces', serif; font-style:italic; color:var(--parchment);
+    font-size:1.2rem; display:block; margin-bottom:6px;
+  }
+
+  #browse{
+    margin-top:44px; display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(148px,1fr)); gap:12px;
+  }
+  .tile{
+    background:var(--ink-2); border:1px solid var(--line); border-radius:var(--radius-sm);
+    padding:14px; cursor:pointer; text-align:left;
+    display:flex; align-items:center; gap:12px;
+    transition:transform 0.15s ease, border-color 0.15s ease;
+  }
+  .tile:hover{border-color:var(--gold); transform:translateY(-2px);}
+  .tile .flagchar{font-size:1.8rem; line-height:1;}
+  .tile span{font-size:0.86rem; color:var(--parchment); line-height:1.25;}
+
+  #profile{margin-top:50px; display:none;}
+  #profile.show{display:block; animation:rise 0.5s ease;}
+  @keyframes rise{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+
+  .profile-card{
+    background:var(--parchment); color:var(--text-dark);
+    border-radius:var(--radius-lg); box-shadow:var(--shadow); overflow:hidden;
+  }
+  .profile-top{display:grid; grid-template-columns:220px 1fr; gap:0;}
+  .flag-panel{
+    background:var(--ink); display:flex; align-items:center; justify-content:center;
+    padding:26px;
+  }
+  .flag-panel .flagchar{font-size:5.2rem; line-height:1;}
+
+  .name-panel{padding:28px 30px 22px;}
+  .name-panel .official{font-size:0.82rem; color:#8a8370; margin:0 0 4px;}
+  .name-panel h2{
+    font-family:'Fraunces', serif; font-weight:500; font-size:2.1rem;
+    margin:0 0 12px; line-height:1.1;
+  }
+  .locus{display:flex; flex-wrap:wrap; gap:6px 18px; font-size:0.92rem; color:#4a4436;}
+  .locus span b{font-weight:600; color:var(--text-dark);}
+
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid rgba(0,0,0,0.08);}
+  .stat{padding:20px 18px; border-right:1px solid rgba(0,0,0,0.08);}
+  .stat:last-child{border-right:none;}
+  .stat .label{font-size:0.78rem; color:#8a8370; margin-bottom:6px;}
+  .stat .value{font-family:'Fraunces', serif; font-size:1.3rem; font-weight:500; line-height:1.15;}
+
+  .detail-rows{
+    padding:22px 30px 28px; border-top:1px solid rgba(0,0,0,0.08);
+    display:grid; grid-template-columns:1fr 1fr; gap:18px 30px;
+  }
+  .drow .label{font-size:0.78rem; color:#8a8370; margin-bottom:5px;}
+  .drow .value{font-size:0.96rem; line-height:1.5;}
+
+  .neighbors{padding:22px 30px 30px; border-top:1px solid rgba(0,0,0,0.08);}
+  .neighbors .label{font-size:0.78rem; color:#8a8370; margin-bottom:12px;}
+  .chip-row{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    background:var(--ink); color:var(--parchment); border:none;
+    font-family:'Inter', sans-serif; font-size:0.85rem;
+    padding:8px 14px; border-radius:100px; cursor:pointer;
+  }
+  .chip:hover{background:var(--brick);}
+  .chip.static{cursor:default;}
+  .chip.static:hover{background:var(--ink);}
+  .no-neighbors{color:#8a8370; font-size:0.9rem; font-style:italic;}
+
+  .map-link{
+    display:inline-flex; align-items:center; gap:8px; margin-top:6px;
+    font-size:0.9rem; color:var(--brick); text-decoration:none;
+    border-bottom:1px solid transparent;
+  }
+  .map-link:hover{border-color:var(--brick);}
+
+  @media (max-width: 680px){
+    .profile-top{grid-template-columns:1fr;}
+    .flag-panel{padding:22px;}
+    .stats{grid-template-columns:1fr 1fr;}
+    .stat{border-bottom:1px solid rgba(0,0,0,0.08);}
+    .detail-rows{grid-template-columns:1fr;}
+  }
+
+  footer{text-align:center; color:#6f6a5a; font-size:0.82rem; padding:50px 20px 10px; position:relative; z-index:1;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <svg class="mark" viewBox="0 0 40 40" fill="none">
+      <circle cx="20" cy="20" r="18" stroke="#C9A227" stroke-width="1.4"/>
+      <path d="M20 6 L23 18 L20 34 L17 18 Z" fill="#C9A227" opacity="0.85"/>
+      <circle cx="20" cy="20" r="2.4" fill="#F3ECDC"/>
+    </svg>
+    <div class="wordmark">Atlas <em>Finder</em></div>
+  </header>
+
+  <section class="hero">
+    <h1>Find any country on Earth.</h1>
+    <p>Type a name or capital — get the flag, the facts, and the neighbors, gathered in one place.</p>
+
+    <div class="search-shell">
+      <div class="search-box">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#1B2530" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="#1B2530" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="searchInput" type="text" placeholder="Try “Portugal”, “Nairobi”, or “Japan”" autocomplete="off">
+        <button id="searchBtn">Search</button>
+      </div>
+      <div id="suggestions" class="suggestions"></div>
+    </div>
+
+    <div class="regions" id="regions">
+      <button data-region="Africa">Africa</button>
+      <button data-region="Americas">Americas</button>
+      <button data-region="Asia">Asia</button>
+      <button data-region="Europe">Europe</button>
+      <button data-region="Oceania">Oceania</button>
+    </div>
+  </section>
+
+  <p class="state-msg" id="stateMsg"></p>
+  <div id="browse"></div>
+  <section id="profile"></section>
+</div>
+
+<footer>
+  Figures are approximate and meant as a quick reference, not an official statistical source.
+</footer>
+
+<script>
+/* ---------- data: every entry is self-contained, no network required ---------- */
+const COUNTRIES = [
+{n:"United States",o:"United States of America",cc:"US",cap:"Washington, D.C.",reg:"Americas",sub:"North America",pop:335900000,area:9833517,langs:["English"],cur:"US Dollar ($)",borders:["Canada","Mexico"]},
+{n:"Canada",o:"Canada",cc:"CA",cap:"Ottawa",reg:"Americas",sub:"North America",pop:39100000,area:9984670,langs:["English","French"],cur:"Canadian Dollar ($)",borders:["United States"]},
+{n:"Mexico",o:"United Mexican States",cc:"MX",cap:"Mexico City",reg:"Americas",sub:"North America",pop:128900000,area:1964375,langs:["Spanish"],cur:"Mexican Peso ($)",borders:["United States","Belize","Guatemala"]},
+{n:"Brazil",o:"Federative Republic of Brazil",cc:"BR",cap:"Brasília",reg:"Americas",sub:"South America",pop:216400000,area:8515767,langs:["Portuguese"],cur:"Brazilian Real (R$)",borders:["Argentina","Peru","Colombia","Bolivia","Uruguay","Paraguay"]},
+{n:"Argentina",o:"Argentine Republic",cc:"AR",cap:"Buenos Aires",reg:"Americas",sub:"South America",pop:45800000,area:2780400,langs:["Spanish"],cur:"Argentine Peso ($)",borders:["Brazil","Chile","Bolivia","Paraguay","Uruguay"]},
+{n:"Chile",o:"Republic of Chile",cc:"CL",cap:"Santiago",reg:"Americas",sub:"South America",pop:19600000,area:756102,langs:["Spanish"],cur:"Chilean Peso ($)",borders:["Argentina","Bolivia","Peru"]},
+{n:"Colombia",o:"Republic of Colombia",cc:"CO",cap:"Bogotá",reg:"Americas",sub:"South America",pop:52200000,area:1141748,langs:["Spanish"],cur:"Colombian Peso ($)",borders:["Brazil","Venezuela","Ecuador","Peru","Panama"]},
+{n:"Peru",o:"Republic of Peru",cc:"PE",cap:"Lima",reg:"Americas",sub:"South America",pop:34400000,area:1285216,langs:["Spanish","Quechua"],cur:"Sol (S/)",borders:["Brazil","Chile","Bolivia","Colombia","Ecuador"]},
+{n:"Cuba",o:"Republic of Cuba",cc:"CU",cap:"Havana",reg:"Americas",sub:"Caribbean",pop:11000000,area:109884,langs:["Spanish"],cur:"Cuban Peso ($)",borders:[]},
+{n:"Jamaica",o:"Jamaica",cc:"JM",cap:"Kingston",reg:"Americas",sub:"Caribbean",pop:2830000,area:10991,langs:["English"],cur:"Jamaican Dollar ($)",borders:[]},
+{n:"Ecuador",o:"Republic of Ecuador",cc:"EC",cap:"Quito",reg:"Americas",sub:"South America",pop:18000000,area:283561,langs:["Spanish"],cur:"US Dollar ($)",borders:["Colombia","Peru"]},
+{n:"Venezuela",o:"Bolivarian Republic of Venezuela",cc:"VE",cap:"Caracas",reg:"Americas",sub:"South America",pop:28300000,area:916445,langs:["Spanish"],cur:"Venezuelan Bolívar (Bs.)",borders:["Brazil","Colombia","Guyana"]},
+
+{n:"United Kingdom",o:"United Kingdom of Great Britain and Northern Ireland",cc:"GB",cap:"London",reg:"Europe",sub:"Northern Europe",pop:67700000,area:243610,langs:["English"],cur:"Pound Sterling (£)",borders:["Ireland"]},
+{n:"France",o:"French Republic",cc:"FR",cap:"Paris",reg:"Europe",sub:"Western Europe",pop:68200000,area:551695,langs:["French"],cur:"Euro (€)",borders:["Germany","Spain","Italy","Belgium","Switzerland"]},
+{n:"Germany",o:"Federal Republic of Germany",cc:"DE",cap:"Berlin",reg:"Europe",sub:"Central Europe",pop:84400000,area:357114,langs:["German"],cur:"Euro (€)",borders:["France","Poland","Austria","Switzerland","Netherlands","Belgium","Denmark","Czechia"]},
+{n:"Italy",o:"Italian Republic",cc:"IT",cap:"Rome",reg:"Europe",sub:"Southern Europe",pop:58900000,area:301340,langs:["Italian"],cur:"Euro (€)",borders:["France","Switzerland","Austria"]},
+{n:"Spain",o:"Kingdom of Spain",cc:"ES",cap:"Madrid",reg:"Europe",sub:"Southern Europe",pop:47600000,area:505992,langs:["Spanish"],cur:"Euro (€)",borders:["France","Portugal"]},
+{n:"Portugal",o:"Portuguese Republic",cc:"PT",cap:"Lisbon",reg:"Europe",sub:"Southern Europe",pop:10300000,area:92090,langs:["Portuguese"],cur:"Euro (€)",borders:["Spain"]},
+{n:"Netherlands",o:"Kingdom of the Netherlands",cc:"NL",cap:"Amsterdam",reg:"Europe",sub:"Western Europe",pop:17900000,area:41850,langs:["Dutch"],cur:"Euro (€)",borders:["Germany","Belgium"]},
+{n:"Sweden",o:"Kingdom of Sweden",cc:"SE",cap:"Stockholm",reg:"Europe",sub:"Northern Europe",pop:10500000,area:450295,langs:["Swedish"],cur:"Swedish Krona (kr)",borders:["Norway","Finland"]},
+{n:"Norway",o:"Kingdom of Norway",cc:"NO",cap:"Oslo",reg:"Europe",sub:"Northern Europe",pop:5500000,area:323802,langs:["Norwegian"],cur:"Norwegian Krone (kr)",borders:["Sweden","Finland"]},
+{n:"Poland",o:"Republic of Poland",cc:"PL",cap:"Warsaw",reg:"Europe",sub:"Central Europe",pop:37700000,area:312696,langs:["Polish"],cur:"Złoty (zł)",borders:["Germany","Czechia","Ukraine"]},
+{n:"Greece",o:"Hellenic Republic",cc:"GR",cap:"Athens",reg:"Europe",sub:"Southern Europe",pop:10400000,area:131957,langs:["Greek"],cur:"Euro (€)",borders:["Albania","North Macedonia","Bulgaria","Turkey"]},
+{n:"Switzerland",o:"Swiss Confederation",cc:"CH",cap:"Bern",reg:"Europe",sub:"Western Europe",pop:8800000,area:41285,langs:["German","French","Italian"],cur:"Swiss Franc (Fr.)",borders:["Germany","France","Italy","Austria"]},
+{n:"Austria",o:"Republic of Austria",cc:"AT",cap:"Vienna",reg:"Europe",sub:"Central Europe",pop:9100000,area:83879,langs:["German"],cur:"Euro (€)",borders:["Germany","Switzerland","Italy"]},
+{n:"Ireland",o:"Ireland",cc:"IE",cap:"Dublin",reg:"Europe",sub:"Northern Europe",pop:5100000,area:70273,langs:["English","Irish"],cur:"Euro (€)",borders:["United Kingdom"]},
+{n:"Finland",o:"Republic of Finland",cc:"FI",cap:"Helsinki",reg:"Europe",sub:"Northern Europe",pop:5600000,area:338424,langs:["Finnish","Swedish"],cur:"Euro (€)",borders:["Sweden","Norway"]},
+{n:"Denmark",o:"Kingdom of Denmark",cc:"DK",cap:"Copenhagen",reg:"Europe",sub:"Northern Europe",pop:5900000,area:42933,langs:["Danish"],cur:"Danish Krone (kr)",borders:["Germany"]},
+{n:"Belgium",o:"Kingdom of Belgium",cc:"BE",cap:"Brussels",reg:"Europe",sub:"Western Europe",pop:11700000,area:30528,langs:["Dutch","French","German"],cur:"Euro (€)",borders:["France","Germany","Netherlands"]},
+{n:"Russia",o:"Russian Federation",cc:"RU",cap:"Moscow",reg:"Europe",sub:"Eastern Europe",pop:144400000,area:17098242,langs:["Russian"],cur:"Russian Ruble (₽)",borders:["China","Ukraine","Finland","Poland"]},
+{n:"Ukraine",o:"Ukraine",cc:"UA",cap:"Kyiv",reg:"Europe",sub:"Eastern Europe",pop:38000000,area:603500,langs:["Ukrainian"],cur:"Hryvnia (₴)",borders:["Russia","Poland","Romania"]},
+{n:"Czechia",o:"Czech Republic",cc:"CZ",cap:"Prague",reg:"Europe",sub:"Central Europe",pop:10500000,area:78871,langs:["Czech"],cur:"Czech Koruna (Kč)",borders:["Germany","Poland","Austria"]},
+{n:"Iceland",o:"Iceland",cc:"IS",cap:"Reykjavík",reg:"Europe",sub:"Northern Europe",pop:390000,area:103000,langs:["Icelandic"],cur:"Icelandic Króna (kr)",borders:[]},
+{n:"Turkey",o:"Republic of Türkiye",cc:"TR",cap:"Ankara",reg:"Asia",sub:"Western Asia",pop:85800000,area:783562,langs:["Turkish"],cur:"Turkish Lira (₺)",borders:["Greece","Bulgaria","Georgia","Iran","Iraq","Syria"]},
+
+{n:"China",o:"People's Republic of China",cc:"CN",cap:"Beijing",reg:"Asia",sub:"Eastern Asia",pop:1412000000,area:9596960,langs:["Mandarin"],cur:"Renminbi (¥)",borders:["Russia","India","Vietnam","Mongolia","Kazakhstan","Pakistan","Nepal"]},
+{n:"Japan",o:"Japan",cc:"JP",cap:"Tokyo",reg:"Asia",sub:"Eastern Asia",pop:123300000,area:377975,langs:["Japanese"],cur:"Japanese Yen (¥)",borders:[]},
+{n:"India",o:"Republic of India",cc:"IN",cap:"New Delhi",reg:"Asia",sub:"Southern Asia",pop:1425800000,area:3287263,langs:["Hindi","English"],cur:"Indian Rupee (₹)",borders:["China","Pakistan","Bangladesh","Nepal","Bhutan","Myanmar"]},
+{n:"South Korea",o:"Republic of Korea",cc:"KR",cap:"Seoul",reg:"Asia",sub:"Eastern Asia",pop:51700000,area:100210,langs:["Korean"],cur:"South Korean Won (₩)",borders:[]},
+{n:"Indonesia",o:"Republic of Indonesia",cc:"ID",cap:"Jakarta",reg:"Asia",sub:"South-Eastern Asia",pop:277500000,area:1904569,langs:["Indonesian"],cur:"Rupiah (Rp)",borders:["Malaysia","Papua New Guinea"]},
+{n:"Thailand",o:"Kingdom of Thailand",cc:"TH",cap:"Bangkok",reg:"Asia",sub:"South-Eastern Asia",pop:71800000,area:513120,langs:["Thai"],cur:"Baht (฿)",borders:["Myanmar","Laos","Cambodia","Malaysia"]},
+{n:"Vietnam",o:"Socialist Republic of Vietnam",cc:"VN",cap:"Hanoi",reg:"Asia",sub:"South-Eastern Asia",pop:98900000,area:331212,langs:["Vietnamese"],cur:"Đồng (₫)",borders:["China","Laos","Cambodia"]},
+{n:"Philippines",o:"Republic of the Philippines",cc:"PH",cap:"Manila",reg:"Asia",sub:"South-Eastern Asia",pop:117300000,area:342353,langs:["Filipino","English"],cur:"Philippine Peso (₱)",borders:[]},
+{n:"Saudi Arabia",o:"Kingdom of Saudi Arabia",cc:"SA",cap:"Riyadh",reg:"Asia",sub:"Western Asia",pop:36900000,area:2149690,langs:["Arabic"],cur:"Saudi Riyal (﷼)",borders:["Jordan","Iraq","Yemen"]},
+{n:"United Arab Emirates",o:"United Arab Emirates",cc:"AE",cap:"Abu Dhabi",reg:"Asia",sub:"Western Asia",pop:9500000,area:83600,langs:["Arabic"],cur:"UAE Dirham (د.إ)",borders:["Saudi Arabia"]},
+{n:"Israel",o:"State of Israel",cc:"IL",cap:"Jerusalem",reg:"Asia",sub:"Western Asia",pop:9800000,area:20770,langs:["Hebrew","Arabic"],cur:"New Israeli Shekel (₪)",borders:["Egypt","Jordan"]},
+{n:"Pakistan",o:"Islamic Republic of Pakistan",cc:"PK",cap:"Islamabad",reg:"Asia",sub:"Southern Asia",pop:240500000,area:881913,langs:["Urdu","English"],cur:"Pakistani Rupee (₨)",borders:["India","China","Iran"]},
+{n:"Bangladesh",o:"People's Republic of Bangladesh",cc:"BD",cap:"Dhaka",reg:"Asia",sub:"Southern Asia",pop:172000000,area:148460,langs:["Bengali"],cur:"Taka (৳)",borders:["India","Myanmar"]},
+{n:"Singapore",o:"Republic of Singapore",cc:"SG",cap:"Singapore",reg:"Asia",sub:"South-Eastern Asia",pop:5900000,area:719,langs:["English","Malay","Mandarin","Tamil"],cur:"Singapore Dollar ($)",borders:[]},
+{n:"Malaysia",o:"Malaysia",cc:"MY",cap:"Kuala Lumpur",reg:"Asia",sub:"South-Eastern Asia",pop:34300000,area:330803,langs:["Malay"],cur:"Ringgit (RM)",borders:["Thailand","Indonesia"]},
+{n:"Iran",o:"Islamic Republic of Iran",cc:"IR",cap:"Tehran",reg:"Asia",sub:"Southern Asia",pop:89200000,area:1648195,langs:["Persian"],cur:"Iranian Rial (﷼)",borders:["Turkey","Iraq","Pakistan","Afghanistan"]},
+{n:"Nepal",o:"Federal Democratic Republic of Nepal",cc:"NP",cap:"Kathmandu",reg:"Asia",sub:"Southern Asia",pop:30900000,area:147181,langs:["Nepali"],cur:"Nepalese Rupee (₨)",borders:["China","India"]},
+
+{n:"Nigeria",o:"Federal Republic of Nigeria",cc:"NG",cap:"Abuja",reg:"Africa",sub:"Western Africa",pop:223800000,area:923768,langs:["English"],cur:"Naira (₦)",borders:["Niger","Chad","Cameroon","Benin"]},
+{n:"Egypt",o:"Arab Republic of Egypt",cc:"EG",cap:"Cairo",reg:"Africa",sub:"Northern Africa",pop:112700000,area:1002450,langs:["Arabic"],cur:"Egyptian Pound (£)",borders:["Sudan","Libya","Israel"]},
+{n:"South Africa",o:"Republic of South Africa",cc:"ZA",cap:"Pretoria",reg:"Africa",sub:"Southern Africa",pop:60400000,area:1221037,langs:["Zulu","Xhosa","Afrikaans","English"],cur:"Rand (R)",borders:["Namibia","Botswana","Zimbabwe","Mozambique","Eswatini","Lesotho"]},
+{n:"Kenya",o:"Republic of Kenya",cc:"KE",cap:"Nairobi",reg:"Africa",sub:"Eastern Africa",pop:55100000,area:580367,langs:["Swahili","English"],cur:"Kenyan Shilling (Sh)",borders:["Tanzania","Uganda","Ethiopia","Somalia","South Sudan"]},
+{n:"Morocco",o:"Kingdom of Morocco",cc:"MA",cap:"Rabat",reg:"Africa",sub:"Northern Africa",pop:37800000,area:446550,langs:["Arabic","Berber"],cur:"Moroccan Dirham (د.م.)",borders:["Algeria"]},
+{n:"Ethiopia",o:"Federal Democratic Republic of Ethiopia",cc:"ET",cap:"Addis Ababa",reg:"Africa",sub:"Eastern Africa",pop:126500000,area:1104300,langs:["Amharic"],cur:"Birr (Br)",borders:["Kenya","Somalia","Sudan","South Sudan","Eritrea","Djibouti"]},
+{n:"Ghana",o:"Republic of Ghana",cc:"GH",cap:"Accra",reg:"Africa",sub:"Western Africa",pop:33500000,area:238533,langs:["English"],cur:"Ghanaian Cedi (₵)",borders:["Ivory Coast","Burkina Faso","Togo"]},
+{n:"Tanzania",o:"United Republic of Tanzania",cc:"TZ",cap:"Dodoma",reg:"Africa",sub:"Eastern Africa",pop:67400000,area:945087,langs:["Swahili","English"],cur:"Tanzanian Shilling (Sh)",borders:["Kenya","Uganda","Zambia","Mozambique"]},
+{n:"Algeria",o:"People's Democratic Republic of Algeria",cc:"DZ",cap:"Algiers",reg:"Africa",sub:"Northern Africa",pop:45600000,area:2381741,langs:["Arabic","Berber"],cur:"Algerian Dinar (د.ج)",borders:["Morocco","Tunisia","Libya","Niger","Mali"]},
+{n:"Angola",o:"Republic of Angola",cc:"AO",cap:"Luanda",reg:"Africa",sub:"Middle Africa",pop:36700000,area:1246700,langs:["Portuguese"],cur:"Kwanza (Kz)",borders:["Namibia","Zambia"]},
+{n:"Senegal",o:"Republic of Senegal",cc:"SN",cap:"Dakar",reg:"Africa",sub:"Western Africa",pop:17800000,area:196722,langs:["French"],cur:"West African CFA franc (Fr)",borders:["Mauritania","Mali","Guinea"]},
+{n:"Tunisia",o:"Republic of Tunisia",cc:"TN",cap:"Tunis",reg:"Africa",sub:"Northern Africa",pop:12300000,area:163610,langs:["Arabic"],cur:"Tunisian Dinar (د.ت)",borders:["Algeria","Libya"]},
+
+{n:"Australia",o:"Commonwealth of Australia",cc:"AU",cap:"Canberra",reg:"Oceania",sub:"Australia and New Zealand",pop:26600000,area:7692024,langs:["English"],cur:"Australian Dollar ($)",borders:[]},
+{n:"New Zealand",o:"New Zealand",cc:"NZ",cap:"Wellington",reg:"Oceania",sub:"Australia and New Zealand",pop:5200000,area:270467,langs:["English","Māori"],cur:"New Zealand Dollar ($)",borders:[]},
+{n:"Fiji",o:"Republic of Fiji",cc:"FJ",cap:"Suva",reg:"Oceania",sub:"Melanesia",pop:930000,area:18274,langs:["English","Fijian"],cur:"Fijian Dollar ($)",borders:[]},
+{n:"Papua New Guinea",o:"Independent State of Papua New Guinea",cc:"PG",cap:"Port Moresby",reg:"Oceania",sub:"Melanesia",pop:10300000,area:462840,langs:["English","Tok Pisin"],cur:"Kina (K)",borders:["Indonesia"]}
+];
+
+const byName = {};
+COUNTRIES.forEach(c => byName[c.n] = c);
+
+function flagEmoji(cc){
+  return cc.toUpperCase().replace(/./g, ch => String.fromCodePoint(127397 + ch.charCodeAt(0)));
+}
+
+const els = {
+  input: document.getElementById('searchInput'),
+  btn: document.getElementById('searchBtn'),
+  suggestions: document.getElementById('suggestions'),
+  regions: document.getElementById('regions'),
+  browse: document.getElementById('browse'),
+  profile: document.getElementById('profile'),
+  stateMsg: document.getElementById('stateMsg'),
+};
+
+function setMessage(html){ els.stateMsg.innerHTML = html; els.stateMsg.classList.add('show'); }
+function clearMessage(){ els.stateMsg.classList.remove('show'); els.stateMsg.innerHTML=''; }
+
+function showBrowseGrid(list){
+  els.browse.innerHTML = list.map(c => `
+    <button class="tile" data-name="${c.n}">
+      <span class="flagchar">${flagEmoji(c.cc)}</span>
+      <span>${c.n}</span>
+    </button>
+  `).join('');
+  [...els.browse.querySelectorAll('.tile')].forEach(t=>{
+    t.addEventListener('click', ()=> showCountry(t.dataset.name));
+  });
+}
+
+const FEATURED = ["Japan","Brazil","Kenya","France","New Zealand","Egypt","Canada","India","Norway","Argentina","Morocco","Thailand"];
+showBrowseGrid(COUNTRIES.filter(c => FEATURED.includes(c.n)));
+
+let activeSuggestion = -1;
+
+els.input.addEventListener('input', ()=>{
+  const q = els.input.value.trim().toLowerCase();
+  activeSuggestion = -1;
+  if(q.length < 1){ closeSuggestions(); return; }
+  const matches = COUNTRIES.filter(c =>
+    c.n.toLowerCase().includes(q) || c.cap.toLowerCase().includes(q)
+  ).slice(0,8);
+  renderSuggestions(matches);
+});
+
+els.input.addEventListener('keydown', (e)=>{
+  const items = [...els.suggestions.querySelectorAll('button')];
+  if(e.key === 'ArrowDown'){
+    e.preventDefault();
+    activeSuggestion = Math.min(activeSuggestion+1, items.length-1);
+    highlightSuggestion(items);
+  } else if(e.key === 'ArrowUp'){
+    e.preventDefault();
+    activeSuggestion = Math.max(activeSuggestion-1, 0);
+    highlightSuggestion(items);
+  } else if(e.key === 'Enter'){
+    if(activeSuggestion >= 0 && items[activeSuggestion]){
+      items[activeSuggestion].click();
+    } else {
+      runSearch(els.input.value.trim());
+    }
+  } else if(e.key === 'Escape'){
+    closeSuggestions();
+  }
+});
+
+function highlightSuggestion(items){
+  items.forEach((it,i)=> it.classList.toggle('active', i===activeSuggestion));
+  if(items[activeSuggestion]) items[activeSuggestion].scrollIntoView({block:'nearest'});
+}
+
+function renderSuggestions(matches){
+  if(matches.length === 0){ closeSuggestions(); return; }
+  els.suggestions.innerHTML = matches.map(c => `
+    <button data-name="${c.n}"><span class="flagchar">${flagEmoji(c.cc)}</span> ${c.n} <span style="color:#8a8370;">— ${c.cap}</span></button>
+  `).join('');
+  [...els.suggestions.querySelectorAll('button')].forEach(b=>{
+    b.addEventListener('click', ()=>{
+      els.input.value = '';
+      closeSuggestions();
+      showCountry(b.dataset.name);
+    });
+  });
+  els.suggestions.classList.add('open');
+}
+function closeSuggestions(){ els.suggestions.classList.remove('open'); els.suggestions.innerHTML = ''; }
+
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('.search-shell')) closeSuggestions();
+});
+
+els.btn.addEventListener('click', ()=> runSearch(els.input.value.trim()));
+
+function runSearch(q){
+  closeSuggestions();
+  if(!q) return;
+  const exact = COUNTRIES.find(c => c.n.toLowerCase() === q.toLowerCase());
+  if(exact){ showCountry(exact.n); return; }
+  const partial = COUNTRIES.filter(c =>
+    c.n.toLowerCase().includes(q.toLowerCase()) || c.cap.toLowerCase().includes(q.toLowerCase())
+  );
+  if(partial.length === 1){ showCountry(partial[0].n); return; }
+  if(partial.length > 1){
+    els.profile.classList.remove('show');
+    clearMessage();
+    showBrowseGrid(partial);
+    return;
+  }
+  els.profile.classList.remove('show');
+  setMessage(`<span class="big">No match for "${escapeHtml(q)}".</span>Try a different spelling, or browse by region below.`);
+  els.browse.innerHTML = '';
+}
+
+els.regions.addEventListener('click', (e)=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  [...els.regions.children].forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const region = btn.dataset.region;
+  const list = COUNTRIES.filter(c => c.reg === region);
+  clearMessage();
+  els.profile.classList.remove('show');
+  showBrowseGrid(list);
+});
+
+function fmtNumber(n){ return n?.toLocaleString('en-US') ?? '—'; }
+
+function showCountry(name){
+  const c = byName[name];
+  if(!c) return;
+  clearMessage();
+  renderProfile(c);
+  els.profile.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function renderProfile(c){
+  const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(c.n)}`;
+  const borderChips = c.borders.length
+    ? c.borders.map(name => {
+        const known = byName[name];
+        return known
+          ? `<button class="chip" data-name="${name}">${name}</button>`
+          : `<span class="chip static">${name}</span>`;
+      }).join('')
+    : `<span class="no-neighbors">No land borders — this country is surrounded by sea.</span>`;
+
+  els.profile.innerHTML = `
+    <div class="profile-card">
+      <div class="profile-top">
+        <div class="flag-panel">
+          <span class="flagchar">${flagEmoji(c.cc)}</span>
+        </div>
+        <div class="name-panel">
+          <p class="official">${c.o}</p>
+          <h2>${c.n}</h2>
+          <div class="locus">
+            <span>Capital <b>${c.cap}</b></span>
+            <span>Region <b>${c.reg} · ${c.sub}</b></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="label">Population</div><div class="value">${fmtNumber(c.pop)}</div></div>
+        <div class="stat"><div class="label">Area</div><div class="value">${fmtNumber(c.area)} km²</div></div>
+        <div class="stat"><div class="label">Languages</div><div class="value" style="font-size:1rem;">${c.langs.join(', ')}</div></div>
+        <div class="stat"><div class="label">Currency</div><div class="value" style="font-size:1rem;">${c.cur}</div></div>
+      </div>
+
+      <div class="detail-rows">
+        <div class="drow">
+          <div class="label">Subregion</div>
+          <div class="value">${c.sub}</div>
+        </div>
+        <div class="drow">
+          <div class="label">Find it on a map</div>
+          <div class="value"><a class="map-link" href="${mapsUrl}" target="_blank" rel="noopener">Open in Google Maps ↗</a></div>
+        </div>
+      </div>
+
+      <div class="neighbors">
+        <div class="label">Shares a border with</div>
+        <div class="chip-row">${borderChips}</div>
+      </div>
+    </div>
+  `;
+
+  [...els.profile.querySelectorAll('.chip[data-name]')].forEach(chip=>{
+    chip.addEventListener('click', ()=> showCountry(chip.dataset.name));
+  });
+
+  els.profile.classList.add('show');
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+</script>
+</body>
+</html>
