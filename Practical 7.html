@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive FAQ Section</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 30px auto;
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #ccc;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .faq {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .question {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .answer {
+            display: none;
+            padding: 15px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        .question:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Frequently Asked Questions</h1>
+
+        <div class="faq">
+            <div class="question">1. What are the college timings?</div>
+            <div class="answer">
+                College timings are from 9:00 AM to 4:00 PM.
+            </div>
+        </div>
+
+        <div class="faq">
+            <div class="question">2. How can I access study materials?</div>
+            <div class="answer">
+                Students can access study materials through the college portal.
+            </div>
+        </div>
+
+        <div class="faq">
+            <div class="question">3. How can I contact the department?</div>
+            <div class="answer">
+                You can contact the department office or email the faculty.
+            </div>
+        </div>
+
+        <div class="faq">
+            <div class="question">4. Where can I check my results?</div>
+            <div class="answer">
+                You can check your results through the official college website.
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const questions = document.querySelectorAll(".question");
+
+        questions.forEach(function(question) {
+            question.addEventListener("click", function() {
+                const answer = this.nextElementSibling;
+
+                if (answer.style.display === "block") {
+                    answer.style.display = "none";
+                } else {
+                    answer.style.display = "block";
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
