@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Showcase</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+    <!-- Header -->
+    <header class="bg-blue-600 text-white p-5">
+        <div class="container mx-auto flex flex-col sm:flex-row
+                    justify-between items-center gap-3">
+
+            <h1 class="text-2xl font-bold">MyStore</h1>
+
+            <nav class="flex gap-6">
+                <a href="#" class="hover:text-yellow-300">Home</a>
+                <a href="#products" class="hover:text-yellow-300">Products</a>
+                <a href="#contact" class="hover:text-yellow-300">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="text-center py-12 px-4">
+        <h2 class="text-3xl md:text-5xl font-bold text-gray-800">
+            New Product Collection
+        </h2>
+
+        <p class="text-gray-600 mt-4 text-lg">
+            Discover the latest products at amazing prices.
+        </p>
+
+        <a href="#products"
+           class="inline-block mt-6 bg-blue-600 text-white
+                  px-6 py-3 rounded-lg hover:bg-blue-700">
+            Shop Now
+        </a>
+    </section>
+
+    <!-- Product Section -->
+    <section id="products" class="container mx-auto px-4 pb-12">
+
+        <h2 class="text-3xl font-bold text-center mb-8">
+            Our Products
+        </h2>
+
+        <!-- Responsive Flexbox Layout -->
+        <div class="flex flex-wrap justify-center gap-6">
+
+            <!-- Product 1 -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden
+                        w-full sm:w-64 hover:shadow-xl">
+
+                <img
+                    src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500"
+                    alt="Headphones"
+                    class="w-full h-52 object-cover">
+
+                <div class="p-5">
+                    <h3 class="text-xl font-bold">Wireless Headphones</h3>
+
+                    <p class="text-gray-600 mt-2">
+                        High-quality sound with a comfortable design.
+                    </p>
+
+                    <p class="text-blue-600 text-xl font-bold mt-3">
+                        ₹1,999
+                    </p>
+
+                    <button
+                        class="w-full bg-blue-600 text-white py-2 mt-4
+                               rounded hover:bg-blue-700">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <!-- Product 2 -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden
+                        w-full sm:w-64 hover:shadow-xl">
+
+                <img
+                    src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"
+                    alt="Smart Watch"
+                    class="w-full h-52 object-cover">
+
+                <div class="p-5">
+                    <h3 class="text-xl font-bold">Smart Watch</h3>
+
+                    <p class="text-gray-600 mt-2">
+                        Track your fitness and stay connected.
+                    </p>
+
+                    <p class="text-blue-600 text-xl font-bold mt-3">
+                        ₹2,499
+                    </p>
+
+                    <button
+                        class="w-full bg-blue-600 text-white py-2 mt-4
+                               rounded hover:bg-blue-700">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <!-- Product 3 -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden
+                        w-full sm:w-64 hover:shadow-xl">
+
+                <img
+                    src="https://images.unsplash.com/photo-1503602642458-232111445657?w=500"
+                    alt="Modern Chair"
+                    class="w-full h-52 object-cover">
+
+                <div class="p-5">
+                    <h3 class="text-xl font-bold">Modern Chair</h3>
+
+                    <p class="text-gray-600 mt-2">
+                        Stylish and comfortable furniture for your home.
+                    </p>
+
+                    <p class="text-blue-600 text-xl font-bold mt-3">
+                        ₹3,499
+                    </p>
+
+                    <button
+                        class="w-full bg-blue-600 text-white py-2 mt-4
+                               rounded hover:bg-blue-700">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+            <!-- Product 4 -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden
+                        w-full sm:w-64 hover:shadow-xl">
+
+                <img
+                    src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500"
+                    alt="Sports Shoes"
+                    class="w-full h-52 object-cover">
+
+                <div class="p-5">
+                    <h3 class="text-xl font-bold">Sports Shoes</h3>
+
+                    <p class="text-gray-600 mt-2">
+                        Lightweight shoes for everyday activities.
+                    </p>
+
+                    <p class="text-blue-600 text-xl font-bold mt-3">
+                        ₹2,999
+                    </p>
+
+                    <button
+                        class="w-full bg-blue-600 text-white py-2 mt-4
+                               rounded hover:bg-blue-700">
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-gray-800 text-white text-center p-5">
+        <p>&copy; 2026 MyStore. All Rights Reserved.</p>
+    </footer>
+
+</body>
+</html>
